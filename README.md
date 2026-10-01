@@ -1,37 +1,115 @@
 # Ops Intelligence
 
-Ops Intelligence is a **synthetic multi-tenant operations analytics platform** designed to demonstrate production-oriented full-stack and cloud engineering: typed web/API boundaries, tenant-safe authorization, transactional operational workflows, analytics, infrastructure as code, automated verification, and observability.
+Ops Intelligence is a **synthetic multi-tenant operations platform** built to demonstrate production-oriented backend, full-stack, and cloud engineering. It focuses on the engineering problems that become important once a system moves beyond CRUD: tenant isolation, authorization, durable data boundaries, auditable mutations, stable API contracts, migration safety, and evidence-backed delivery.
 
-## Evidence state
+## Engineering evidence
 
-- **Implemented locally:** FastAPI API foundation, organization-aware login, rotating refresh sessions, Argon2 password hashing, RBAC, tenant-scoped product/inventory APIs, paginated list contracts, request-ID error envelopes, audit events, KPI aggregation, deterministic fixtures, Alembic migrations, OpenAPI artifact/check, a Next.js login/dashboard path wired to the API through HttpOnly cookies, API-backed product/inventory views, audited inventory editing, recent activity, and Playwright journey scaffolding.
-- **Verified in this build environment:** 15 backend tests, OpenAPI drift check, Python compilation, and SQLite-backed migration upgrade/downgrade/upgrade flow.
-- **Not yet verified here:** PostgreSQL runtime test, Docker Compose, Redis behavior, Next.js dependency install/build/test, AWS/Terraform provisioning, external deployment.
+**Verified in GitHub Actions on `main`:**
+- Python 3.12 API install and test execution
+- non-PostgreSQL backend test suite
+- versioned OpenAPI drift check
+- Alembic migration to head
+- PostgreSQL 16 service boot + migrated PostgreSQL contract test
+- Node 22 dependency install + Next.js production build
+
+**Implemented:**
+- FastAPI + Pydantic API foundation
+- organization-aware authentication
+- opaque rotating refresh sessions stored only as hashes
+- server-side RBAC
+- tenant-scoped product/inventory access
+- stable paginated list contracts
+- request-ID error envelopes
+- transactional audit events
+- tenant-scoped KPI aggregation
+- Alembic migrations
+- versioned OpenAPI artifact
+- Next.js login/dashboard flow through HttpOnly cookies
+- API-backed products, inventory, and recent activity
+- Playwright journey scaffolding
+
+**Not yet claimed as verified:** Docker Compose runtime, Redis behavior, Terraform/AWS provisioning, external deployment, and production observability.
 
 ## Business problem
 
-Operational teams often need one place to understand inventory, customers, orders, repairs, transactions and key metrics while enforcing tenant boundaries and role-specific access. This repository models that problem with fictional data only.
+Operational teams need one place to understand inventory, activity, and key metrics without weakening organizational data boundaries. The platform models that problem with fictional data only so architecture, security, and delivery practices can be reviewed publicly without exposing customer or business data.
 
 ## Architecture
 
-See `docs/architecture/system-context.md` and `docs/adr/`.
+The current design is a modular monolith with explicit web, API, persistence, and tenant boundaries.
 
-## Technology stack
+- **Web:** Next.js / React / TypeScript
+- **API:** Python / FastAPI / Pydantic
+- **Persistence:** SQLAlchemy + Alembic, PostgreSQL as the target system of record
+- **Auth:** short-lived access credentials + rotating opaque refresh sessions
+- **Delivery:** Docker assets + GitHub Actions
+- **Cloud target:** AWS + Terraform (not yet claimed as deployed)
 
-Next.js/React/TypeScript, Python/FastAPI/Pydantic, SQLAlchemy/Alembic, PostgreSQL target, Redis target, Docker, Terraform/AWS target.
+See:
+- `docs/architecture/system-context.md`
+- `docs/adr/001-modular-monolith.md`
+- `docs/adr/002-tenant-boundary.md`
+- `docs/adr/003-refresh-session-rotation.md`
+
+## Security model
+
+Tenant identity is derived from the authenticated user rather than accepted from arbitrary resource-write payloads. Authorization is enforced server-side. Cross-tenant object access intentionally resolves as `404` where applicable.
+
+Passwords use Argon2. Refresh tokens are opaque random values, stored only as hashes, rotated on use, and revoked on logout. Browser-facing routes keep credentials in HttpOnly SameSite cookies.
+
+See `SECURITY.md`.
+
+## API contract
+
+Implemented endpoints include:
+
+- `GET /health`, `GET /ready`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/me`
+- `POST/GET /api/v1/products`
+- `GET/PATCH /api/v1/products/{id}`
+- `POST/GET/PATCH /api/v1/inventory`
+- `GET /api/v1/analytics/kpis`
+- `GET /api/v1/audit-events`
+
+The checked-in OpenAPI document is treated as a versioned contract and CI fails on drift.
+
+## Testing strategy
+
+The backend tests cover organization-aware authentication, refresh rotation and replay prevention, logout revocation, expired refresh rejection, validation/conflict envelopes, request IDs, pagination, tenant list/object isolation, analyst write denial, audit linkage, and tenant-scoped KPI aggregation.
+
+CI also runs a PostgreSQL-specific contract test against PostgreSQL 16 and performs a production Next.js build.
+
+Playwright journey scaffolding exists for login → products → inventory mutation → audit visibility; execution should not be described as verified until an observed Playwright run is recorded.
+
+## Engineering decisions
+
+### Start with a modular monolith
+Service boundaries are kept inside one deployable system until scale, ownership, or reliability requirements justify distributed services. This reduces operational complexity while preserving explicit module and tenant boundaries.
+
+### PostgreSQL is authoritative
+Redis is non-authoritative and should only be introduced where a measured performance or coordination need justifies it.
+
+### Tenant scope comes from identity
+Clients do not choose their organization by sending an `organization_id` in protected mutations. The authenticated principal determines tenant scope.
+
+### Evidence before claims
+Features move from designed → implemented → tested → deployed only when the corresponding evidence exists. README and build-status claims are deliberately narrower than planned architecture.
 
 ## Repository structure
 
-- `apps/api` — FastAPI service
-- `apps/web` — Next.js UI shell
-- `docs` — architecture and ADRs
-- `infrastructure/terraform` — reserved for verified IaC implementation
+- `apps/api` — FastAPI service and backend tests
+- `apps/web` — Next.js application
+- `docs/architecture` — system views
+- `docs/adr` — architecture decision records
+- `docs/openapi.json` — versioned API contract
 - `docker` — container assets
-- `scripts` — deterministic synthetic seed
+- `infrastructure/terraform` — infrastructure target
+- `scripts` — deterministic seed and contract tooling
 
 ## Local development
-
-Python API (without Docker):
 
 ```bash
 export PYTHONPATH=apps/api
@@ -41,65 +119,23 @@ python scripts/seed.py
 uvicorn app.main:app --app-dir apps/api --reload
 ```
 
-PostgreSQL/Redis target runtime is described in `docker-compose.yml` but has not been executed in this environment.
+For the web application, use the package scripts in `apps/web`.
 
-## Environment configuration
+## Current limitations
 
-Copy `.env.example` to an untracked `.env`. Never place real secrets in `.env.example`.
+- Docker Compose has not yet been recorded as successfully executed.
+- Redis behavior is not yet verified.
+- Terraform/AWS provisioning is not yet implemented and observed end-to-end.
+- No external/public production deployment is claimed.
+- Structured logs, metrics, and tracing remain planned beyond the current request-ID boundary.
 
-## Database & migrations
+## Interview discussion points
 
-SQLAlchemy models encode tenant IDs, uniqueness and non-negative quantity/money constraints. Alembic is the migration mechanism. PostgreSQL is the intended system of record; SQLite is used only for local verification in the current tool environment.
-
-## API
-
-Implemented first-slice endpoints:
-- `GET /health`, `GET /ready`
-- `POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`, `GET /api/v1/me`
-- `POST/GET /api/v1/products`, `GET/PATCH /api/v1/products/{id}`
-- `POST/GET/PATCH /api/v1/inventory`
-- `GET /api/v1/analytics/kpis`
-- `GET /api/v1/audit-events`
-
-Cross-tenant object access intentionally resolves as `404`.
-
-## Testing
-
-Tests cover organization-aware authentication, refresh rotation/replay prevention, logout revocation, expired refresh rejection, pagination envelopes, validation/conflict error envelopes, request IDs, tenant list/object isolation, analyst write denial, audit linkage, and tenant-scoped KPI aggregation. A PostgreSQL-only schema contract test is wired for CI and skipped locally unless `TEST_POSTGRES_URL` is configured.
-
-## Security
-
-Tenant identity derives from the authenticated user. Role authorization is enforced server-side. Argon2 hashes passwords. Access tokens are short-lived signed credentials; refresh tokens are opaque, rotated on use, stored only as hashes, and revocable. See `SECURITY.md`.
-
-## Deployment
-
-No deployment is claimed. AWS target architecture remains design-only until infrastructure is implemented and observed.
-
-## Observability
-
-Request IDs are normalized for all requests and returned in API error envelopes. Structured logging/metrics/tracing remain planned and must not be described as implemented yet.
-
-## Infrastructure as Code
-
-Terraform directories are reserved but not yet implemented.
-
-## Engineering tradeoffs
-
-A modular monolith is used first to maximize correctness and clarity before introducing service boundaries. Redis remains non-authoritative. Tenant filtering is explicit in every first-slice query.
-
-## Known limitations
-
-The backend now implements rotating refresh sessions and the final page envelope. PostgreSQL/Docker remain unverified here. The Next.js source is wired to the API with product/inventory/activity flows, but dependency installation/build and Playwright execution could not be verified in this environment.
-
-## Roadmap
-
-Run the PostgreSQL CI contract, verify the Next.js build and Playwright journey, add Redis-backed rate limiting only where justified, verify Docker Compose, then proceed to Terraform and observability.
-
-## Interview talking points
-
-- Why tenant scope is derived from authentication rather than client payloads
-- Why cross-tenant lookups return 404
-- Why audit records share the inventory transaction
-- Why PostgreSQL is authoritative and Redis is not
-- Why the system starts as a modular monolith
-- How claims progress from designed -> implemented -> tested -> deployed only with evidence
+- Why tenant scope is derived from authentication rather than payloads
+- Why cross-tenant lookups return `404`
+- Why audit records are coupled to operational mutations
+- Why refresh credentials rotate and are stored only as hashes
+- Why PostgreSQL remains authoritative if Redis is introduced
+- Why the system begins as a modular monolith
+- How API contract drift is prevented
+- How engineering claims are tied to observed evidence

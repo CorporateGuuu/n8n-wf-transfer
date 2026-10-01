@@ -1,41 +1,58 @@
-# Build status — 2026-09-30
+# Build status — 2026-10-01
 
-## Completed locally
+## Verified in hosted GitHub Actions
 
-- Hardened the first Ops Intelligence vertical slice instead of adding a new parallel implementation.
-- Added organization-aware login plus opaque rotating refresh sessions stored only as SHA-256 hashes.
-- Added logout revocation and replay prevention for used/expired refresh tokens.
-- Added global request IDs and structured API error envelopes.
-- Added paginated `{items,page,page_size,total}` contracts for products, inventory and audit events.
-- Added product update/audit behavior and deterministic sort/page validation.
-- Added a second Alembic migration for refresh sessions.
-- Added versioned OpenAPI export plus a drift check script.
-- Added PostgreSQL-specific test structure and a PostgreSQL 16 CI service job.
-- Added a Next.js login/dashboard flow that calls the FastAPI API through HttpOnly cookies and rotates refresh tokens in the server route.
-- Added API-backed product catalog and inventory management pages.
-- Added audited inventory quantity mutation through a server-side Next.js proxy.
-- Added recent audit activity to the dashboard and role-aware write controls.
-- Added shared session-refresh proxy logic so dashboard/products/inventory requests use one auth boundary.
-- Added Playwright scaffolding for login -> products -> inventory mutation -> audit visibility.
+Latest successful `main` CI run: commit `4b11b1e6bbd7ec04bfb10c0fa6e4cc06c8bdca75` ("verify Next.js build in hosted CI").
 
-## Verified in this environment
+The hosted pipeline successfully verified:
 
-- `pytest -q` -> **15 passed, 1 PostgreSQL-only test skipped by design**.
-- `python scripts/export_openapi.py --check` -> passed.
-- `python -m compileall -q apps/api scripts` -> passed.
-- Lightweight TypeScript compiler pass over current web source and Playwright source using local declaration stubs -> passed; this is not a Next.js build claim.
-- Alembic clean-database `upgrade head -> downgrade base -> upgrade head` -> passed on SQLite verification DB in the previous phase.
-- Local high-risk pattern scan -> no private-key/AWS-live-key/Stripe-live-key/Supabase-secret pattern found in the previous verified phase.
+- Python 3.12 package installation
+- backend tests excluding the PostgreSQL-only marker
+- OpenAPI drift check
+- Alembic migration to head on SQLite CI database
+- PostgreSQL 16 service startup
+- Alembic migration against PostgreSQL
+- PostgreSQL-specific contract test
+- Node 22 setup
+- web dependency installation
+- Next.js production build
 
-## Not verified here
+This supersedes the earlier local-only statement that PostgreSQL runtime and the real Next.js build were unverified.
 
-- PostgreSQL runtime test: no PostgreSQL service is available in this execution environment; CI wiring exists but has not run here.
-- Docker Compose execution: Docker is unavailable here.
-- Redis behavior.
-- Next.js dependency install/build/test: `npm install` timed out in this execution environment, so frontend source and Playwright scaffolding are implemented but no real Next.js/Playwright pass is claimed.
-- Terraform/AWS plan or deployment.
-- External/public deployment.
+## Implemented
+
+- organization-aware login
+- rotating opaque refresh sessions stored only as SHA-256 hashes
+- logout revocation and replay prevention
+- global request IDs and stable API error envelopes
+- paginated product, inventory, and audit contracts
+- product/inventory mutation auditing
+- deterministic sorting/page validation
+- Alembic migrations
+- versioned OpenAPI export/check
+- Next.js login/dashboard flow through HttpOnly cookies
+- API-backed product and inventory views
+- role-aware write controls
+- shared server-side auth/refresh proxy boundary
+- Playwright journey scaffolding
+
+## Verified locally in the earlier build environment
+
+- `pytest -q` → **15 passed, 1 PostgreSQL-only test skipped by design**
+- `python scripts/export_openapi.py --check` → passed
+- `python -m compileall -q apps/api scripts` → passed
+- Alembic clean-database `upgrade head -> downgrade base -> upgrade head` → passed on SQLite
+- targeted high-risk secret-pattern scan → no matched private-key/AWS-live-key/Stripe-live-key/Supabase-secret pattern in that verified phase
+
+## Still not verified
+
+- Docker Compose execution
+- Redis runtime behavior
+- Playwright browser journey execution
+- Terraform/AWS plan or provisioning
+- external/public deployment
+- production metrics/tracing/alerting
 
 ## Evidence rule
 
-Do not upgrade any unverified item to TESTED/DEPLOYED until the corresponding runtime or command is actually observed.
+Do not describe an item as TESTED or DEPLOYED until the relevant runtime, CI job, or external environment has actually been observed. Planned architecture must remain labeled as planned.
