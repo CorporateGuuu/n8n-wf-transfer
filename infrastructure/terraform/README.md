@@ -5,6 +5,7 @@ This directory contains the first implemented AWS infrastructure slice for Ops I
 ## Implemented
 
 - provider/version constraints
+- provider-level ownership and cost-allocation tags
 - tagged VPC
 - two public subnets
 - two private subnets
@@ -36,6 +37,7 @@ CI runs:
 terraform fmt -check -recursive
 terraform init -backend=false
 terraform validate
+python ../../scripts/validate_finops.py
 ```
 
 Validation proves Terraform configuration correctness. It does **not** prove an AWS deployment.

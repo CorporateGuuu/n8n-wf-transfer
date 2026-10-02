@@ -13,6 +13,7 @@ Ops Intelligence is a **synthetic multi-tenant operations platform** built to de
 - Node 22 dependency install + Next.js production build
 - Terraform 1.9.8 format, init, and validate for the AWS network reference slice
 - Apigee reference proxy bundle static validation
+- FinOps allocation/ownership tag contract validation
 - Helm lint/render, GitOps reference validation, repository public-safety scan, API container build, and SPDX SBOM generation
 
 **Implemented:**
@@ -149,6 +150,10 @@ For the web application, use the package scripts in `apps/web`.
 - Why the system begins as a modular monolith
 - How API contract drift is prevented
 - How engineering claims are tied to observed evidence
+
+## FinOps / cost ownership
+
+Terraform enforces public-safe ownership, cost-center, environment, project, management, and data-classification tags. CI validates the tagging contract and explicit flow-log retention. Cost claims remain unverified until an actual AWS environment produces billing telemetry. See `docs/finops.md`.
 
 ## Platform / GitOps / SRE
 

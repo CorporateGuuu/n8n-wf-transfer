@@ -1,0 +1,4 @@
+environment         = "dev"
+owner_tag           = "platform-engineering"
+cost_center         = "engineering-portfolio"
+data_classification = "synthetic-public"
