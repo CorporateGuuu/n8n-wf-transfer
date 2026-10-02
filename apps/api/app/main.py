@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import time
 import uuid
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy import text
 
 from app.api.router import router
+from app.core.metrics import metrics_payload, observe_request
 from app.db.session import SessionLocal
 
 
