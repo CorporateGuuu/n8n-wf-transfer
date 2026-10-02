@@ -1,4 +1,10 @@
 FROM python:3.12-slim
+
+# Apply current Debian security fixes at build time; Trivy CI verifies the result.
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /workspace
 COPY pyproject.toml alembic.ini ./
 COPY apps/api ./apps/api
