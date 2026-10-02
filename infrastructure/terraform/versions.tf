@@ -14,9 +14,12 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "ops-intelligence"
-      Environment = var.environment
-      ManagedBy   = "terraform"
+      Project            = "ops-intelligence"
+      Environment        = var.environment
+      ManagedBy          = "terraform"
+      Owner              = var.owner_tag
+      CostCenter         = var.cost_center
+      DataClassification = var.data_classification
     }
   }
 }
