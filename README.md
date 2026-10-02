@@ -14,6 +14,7 @@ Ops Intelligence is a **synthetic multi-tenant operations platform** built to de
 - Terraform 1.9.8 format, init, and validate for the AWS network reference slice
 - Apigee reference proxy bundle static validation
 - FinOps allocation/ownership tag contract validation
+- blocking Trivy filesystem and API-container scans for fixable HIGH/CRITICAL vulnerabilities
 - Helm lint/render, GitOps reference validation, repository public-safety scan, API container build, and SPDX SBOM generation
 
 **Implemented:**
@@ -150,6 +151,10 @@ For the web application, use the package scripts in `apps/web`.
 - Why the system begins as a modular monolith
 - How API contract drift is prevented
 - How engineering claims are tied to observed evidence
+
+## Vulnerability management
+
+CI blocks fixable HIGH/CRITICAL findings in both the repository filesystem and the built API image. The initial image scan surfaced one HIGH Debian package CVE, which was remediated through the container build before the gate became blocking. See `docs/vulnerability-management.md`.
 
 ## FinOps / cost ownership
 
