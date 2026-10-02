@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.router import router
 from app.core.metrics import metrics_payload, observe_request
@@ -31,6 +32,7 @@ def _error_code(status_code: int) -> str:
         404: "NOT_FOUND",
         409: "CONFLICT",
         422: "VALIDATION_ERROR",
+        503: "SERVICE_UNAVAILABLE",
     }.get(status_code, "HTTP_ERROR")
 
 
@@ -92,8 +94,11 @@ def create_app() -> FastAPI:
 
     @app.get("/ready")
     def ready() -> dict[str, str]:
-        with SessionLocal() as db:
-            db.execute(text("SELECT 1"))
+        try:
+            with SessionLocal() as db:
+                db.execute(text("SELECT 1"))
+        except SQLAlchemyError as exc:
+            raise HTTPException(status_code=503, detail="Database dependency unavailable") from exc
         return {"status": "ready"}
 
     @app.get("/metrics", include_in_schema=False)
