@@ -4,13 +4,14 @@ Ops Intelligence is a **synthetic multi-tenant operations platform** built to de
 
 ## Engineering evidence
 
-**Verified in GitHub Actions on `main`:**
+**Verified in GitHub Actions:**
 - Python 3.12 API install and test execution
 - non-PostgreSQL backend test suite
 - versioned OpenAPI drift check
 - Alembic migration to head
 - PostgreSQL 16 service boot + migrated PostgreSQL contract test
 - Node 22 dependency install + Next.js production build
+- Terraform 1.9.8 format, init, and validate for the AWS network reference slice
 
 **Implemented:**
 - FastAPI + Pydantic API foundation
@@ -27,6 +28,7 @@ Ops Intelligence is a **synthetic multi-tenant operations platform** built to de
 - Next.js login/dashboard flow through HttpOnly cookies
 - API-backed products, inventory, and recent activity
 - Playwright journey scaffolding
+- Terraform AWS network reference slice: VPC, two public subnets, two private subnets, internet gateway/public routing, and ALB/application/database security-group boundaries
 
 **Not yet claimed as verified:** Docker Compose runtime, Redis behavior, Terraform/AWS provisioning, external deployment, and production observability.
 
@@ -57,7 +59,7 @@ Tenant identity is derived from the authenticated user rather than accepted from
 
 Passwords use Argon2. Refresh tokens are opaque random values, stored only as hashes, rotated on use, and revoked on logout. Browser-facing routes keep credentials in HttpOnly SameSite cookies.
 
-See `SECURITY.md`.
+See `SECURITY.md` and `docs/public-sector-engineering.md`.
 
 ## API contract
 
@@ -106,7 +108,9 @@ Features move from designed → implemented → tested → deployed only when th
 - `docs/adr` — architecture decision records
 - `docs/openapi.json` — versioned API contract
 - `docker` — container assets
-- `infrastructure/terraform` — infrastructure target
+- `infrastructure/terraform` — implemented and CI-validated AWS network reference slice
+- `docs/public-sector-engineering.md` — public-safe federal/contractor engineering discussion guide
+- `docs/role-evidence-matrix.md` — role-to-evidence map for recruiter/interview review
 - `scripts` — deterministic seed and contract tooling
 
 ## Local development
@@ -125,7 +129,7 @@ For the web application, use the package scripts in `apps/web`.
 
 - Docker Compose has not yet been recorded as successfully executed.
 - Redis behavior is not yet verified.
-- Terraform/AWS provisioning is not yet implemented and observed end-to-end.
+- The Terraform network slice is implemented and CI-validated, but no AWS plan/apply or live provisioning is claimed.
 - No external/public production deployment is claimed.
 - Structured logs, metrics, and tracing remain planned beyond the current request-ID boundary.
 
@@ -139,3 +143,7 @@ For the web application, use the package scripts in `apps/web`.
 - Why the system begins as a modular monolith
 - How API contract drift is prevented
 - How engineering claims are tied to observed evidence
+
+## Cross-sector review
+
+For role-specific review, see `docs/role-evidence-matrix.md`. For public-sector/federal-contractor discussion boundaries and control mapping, see `docs/public-sector-engineering.md`. These documents use only synthetic/public-safe architecture and do not claim accreditation, authorization, compliance certification, or clearance status.
