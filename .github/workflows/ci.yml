@@ -168,7 +168,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Trivy filesystem discovery scan
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -179,7 +179,7 @@ jobs:
       - name: Build API image
         run: docker build -f docker/api.Dockerfile -t ops-intelligence-api:scan .
       - name: Trivy container discovery scan
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ops-intelligence-api:scan
           severity: CRITICAL,HIGH
