@@ -2,7 +2,7 @@
 
 ## Verified in hosted GitHub Actions
 
-Latest successful `main` CI run: commit `4b11b1e6bbd7ec04bfb10c0fa6e4cc06c8bdca75` ("verify Next.js build in hosted CI").
+The cross-sector portfolio PR CI run completed successfully on 2026-10-01/02. Main-branch verification should be checked again after merge.
 
 The hosted pipeline successfully verified:
 
@@ -16,6 +16,9 @@ The hosted pipeline successfully verified:
 - Node 22 setup
 - web dependency installation
 - Next.js production build
+- Terraform 1.9.8 format check
+- Terraform init with backend disabled
+- Terraform validate for the AWS network reference slice
 
 This supersedes the earlier local-only statement that PostgreSQL runtime and the real Next.js build were unverified.
 
@@ -35,6 +38,7 @@ This supersedes the earlier local-only statement that PostgreSQL runtime and the
 - role-aware write controls
 - shared server-side auth/refresh proxy boundary
 - Playwright journey scaffolding
+- Terraform AWS network reference slice with VPC, public/private subnets, internet gateway/public route, and ALB/app/database security-group boundaries
 
 ## Verified locally in the earlier build environment
 
@@ -49,7 +53,8 @@ This supersedes the earlier local-only statement that PostgreSQL runtime and the
 - Docker Compose execution
 - Redis runtime behavior
 - Playwright browser journey execution
-- Terraform/AWS plan or provisioning
+- Terraform plan/apply against an AWS account
+- live AWS provisioning
 - external/public deployment
 - production metrics/tracing/alerting
 
