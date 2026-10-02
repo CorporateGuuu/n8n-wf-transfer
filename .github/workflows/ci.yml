@@ -97,3 +97,39 @@ jobs:
           python-version: '3.12'
       - name: Validate Apigee reference bundle
         run: python scripts/validate_apigee.py
+
+  platform-gitops:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: azure/setup-helm@v5
+        with:
+          version: v3.18.4
+      - name: Helm lint
+        run: helm lint deploy/helm/ops-intelligence
+      - name: Helm render
+        run: helm template portfolio deploy/helm/ops-intelligence > /tmp/ops-intelligence.yaml
+      - name: Validate GitOps reference
+        run: python scripts/validate_gitops.py
+      - name: Public-safety secret scan
+        run: python scripts/security_scan.py
+      - name: Build API container
+        run: docker build -f docker/api.Dockerfile -t ops-intelligence-api:ci .
+
+  sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          artifact-name: ops-intelligence-sbom.spdx.json
+          upload-release-assets: false
