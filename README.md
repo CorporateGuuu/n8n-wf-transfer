@@ -57,7 +57,7 @@ Tenant identity is derived from the authenticated user rather than accepted from
 
 Passwords use Argon2. Refresh tokens are opaque random values, stored only as hashes, rotated on use, and revoked on logout. Browser-facing routes keep credentials in HttpOnly SameSite cookies.
 
-See `SECURITY.md`.
+See `SECURITY.md` and `docs/public-sector-engineering.md`.
 
 ## API contract
 
@@ -106,7 +106,8 @@ Features move from designed → implemented → tested → deployed only when th
 - `docs/adr` — architecture decision records
 - `docs/openapi.json` — versioned API contract
 - `docker` — container assets
-- `infrastructure/terraform` — infrastructure target
+- `docs/public-sector-engineering.md` — public-safe federal/contractor engineering discussion guide
+- `docs/role-evidence-matrix.md` — role-to-evidence map for recruiter/interview review
 - `scripts` — deterministic seed and contract tooling
 
 ## Local development
@@ -125,7 +126,7 @@ For the web application, use the package scripts in `apps/web`.
 
 - Docker Compose has not yet been recorded as successfully executed.
 - Redis behavior is not yet verified.
-- Terraform/AWS provisioning is not yet implemented and observed end-to-end.
+- Terraform/AWS provisioning remains a planned next phase; no Terraform implementation is present in the current repository tree.
 - No external/public production deployment is claimed.
 - Structured logs, metrics, and tracing remain planned beyond the current request-ID boundary.
 
@@ -139,3 +140,7 @@ For the web application, use the package scripts in `apps/web`.
 - Why the system begins as a modular monolith
 - How API contract drift is prevented
 - How engineering claims are tied to observed evidence
+
+## Cross-sector review
+
+For role-specific review, see `docs/role-evidence-matrix.md`. For public-sector/federal-contractor discussion boundaries and control mapping, see `docs/public-sector-engineering.md`. These documents use only synthetic/public-safe architecture and do not claim accreditation, authorization, compliance certification, or clearance status.
