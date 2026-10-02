@@ -13,6 +13,7 @@ Ops Intelligence is a **synthetic multi-tenant operations platform** built to de
 - Node 22 dependency install + Next.js production build
 - Terraform 1.9.8 format, init, and validate for the AWS network reference slice
 - Apigee reference proxy bundle static validation
+- Helm lint/render, GitOps reference validation, repository public-safety scan, API container build, and SPDX SBOM generation
 
 **Implemented:**
 - FastAPI + Pydantic API foundation
@@ -114,6 +115,8 @@ Features move from designed → implemented → tested → deployed only when th
 - `docs/role-evidence-matrix.md` — role-to-evidence map for recruiter/interview review
 - `scripts` — deterministic seed and contract tooling
 - `integrations/apigee` — public-safe API management proxy/policy reference bundle
+- `deploy/helm/ops-intelligence` — Kubernetes/Helm deployment reference
+- `gitops/argocd` — Argo CD GitOps reference manifest
 
 ## Local development
 
@@ -145,6 +148,10 @@ For the web application, use the package scripts in `apps/web`.
 - Why the system begins as a modular monolith
 - How API contract drift is prevented
 - How engineering claims are tied to observed evidence
+
+## Platform / GitOps / SRE
+
+The repository now includes a Helm chart, an Argo CD reference Application, deployment health probes, resource limits, non-root/read-only container controls, CI Helm validation, a container build gate, and SBOM generation. These are implemented/validated artifacts; no live Kubernetes/OpenShift/Argo deployment is claimed. See `docs/platform-gitops-sre.md`.
 
 ## Enterprise API management
 
