@@ -161,7 +161,7 @@ jobs:
       - name: Validate FinOps controls
         run: python scripts/validate_finops.py
 
-  vulnerability-discovery:
+  vulnerability-scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -175,7 +175,7 @@ jobs:
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           format: table
-          exit-code: '0'
+          exit-code: '1'
       - name: Build API image
         run: docker build -f docker/api.Dockerfile -t ops-intelligence-api:scan .
       - name: Trivy container discovery scan
@@ -185,4 +185,4 @@ jobs:
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           format: table
-          exit-code: '0'
+          exit-code: '1'
