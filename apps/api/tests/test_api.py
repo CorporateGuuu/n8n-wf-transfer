@@ -14,6 +14,15 @@ def test_health(client):
     assert response.headers["X-Request-ID"]
 
 
+def test_metrics_exposes_bounded_http_series(client):
+    client.get("/health")
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    assert "ops_http_requests_total" in response.text
+    assert 'route="/health"' in response.text
+    assert "ops_http_request_duration_seconds" in response.text
+
+
 def test_login_and_me(client):
     headers = login(client)
     r = client.get("/api/v1/me", headers=headers)
