@@ -12,6 +12,7 @@ Ops Intelligence is a **synthetic multi-tenant operations platform** built to de
 - PostgreSQL 16 service boot + migrated PostgreSQL contract test
 - Node 22 dependency install + Next.js production build
 - Terraform 1.9.8 format, init, and validate for the AWS network reference slice
+- Apigee reference proxy bundle static validation
 
 **Implemented:**
 - FastAPI + Pydantic API foundation
@@ -112,6 +113,7 @@ Features move from designed → implemented → tested → deployed only when th
 - `docs/public-sector-engineering.md` — public-safe federal/contractor engineering discussion guide
 - `docs/role-evidence-matrix.md` — role-to-evidence map for recruiter/interview review
 - `scripts` — deterministic seed and contract tooling
+- `integrations/apigee` — public-safe API management proxy/policy reference bundle
 
 ## Local development
 
@@ -143,6 +145,10 @@ For the web application, use the package scripts in `apps/web`.
 - Why the system begins as a modular monolith
 - How API contract drift is prevented
 - How engineering claims are tied to observed evidence
+
+## Enterprise API management
+
+A statically validated Apigee reference bundle lives under `integrations/apigee`. It demonstrates gateway-layer JWT verification, spike arrest, quota, request-ID propagation, target separation, and promotion/governance documentation. No live Apigee deployment is claimed.
 
 ## Cross-sector review
 
