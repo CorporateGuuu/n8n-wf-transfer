@@ -24,6 +24,7 @@ Ops Intelligence is a **synthetic multi-tenant operations platform** built to de
 - stable paginated list contracts
 - request-ID error envelopes
 - transactional audit events
+- Prometheus request counters and latency histograms with bounded route-template labels
 - tenant-scoped KPI aggregation
 - Alembic migrations
 - versioned OpenAPI artifact
@@ -136,7 +137,7 @@ For the web application, use the package scripts in `apps/web`.
 - Redis behavior is not yet verified.
 - The Terraform network slice is implemented and CI-validated, but no AWS plan/apply or live provisioning is claimed.
 - No external/public production deployment is claimed.
-- Structured logs, metrics, and tracing remain planned beyond the current request-ID boundary.
+- Prometheus request metrics are implemented; structured JSON logging, distributed tracing/OpenTelemetry export, and live dashboard/alerting remain planned.
 
 ## Interview discussion points
 

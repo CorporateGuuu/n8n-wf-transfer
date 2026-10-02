@@ -3,6 +3,9 @@
 ## Evidence state
 
 **Implemented**
+- Prometheus HTTP request counter + duration histogram
+- `/metrics` endpoint excluded from public OpenAPI
+- bounded labels using method, route template, and status
 - Helm chart for the Ops Intelligence API
 - Kubernetes Deployment and Service templates
 - liveness/readiness probes
@@ -13,6 +16,8 @@
 - SBOM generation in CI
 
 **Not yet claimed**
+- OpenTelemetry exporter/tracing integration
+- live Prometheus/Grafana deployment
 - live Kubernetes cluster deployment
 - live Argo CD sync
 - OpenShift execution
@@ -26,6 +31,10 @@ The application remains deployable as a modular monolith. Kubernetes is treated 
 Helm provides reusable deployment configuration. Argo CD represents the desired GitOps promotion model: Git remains the declared source of deployment state, and environment changes should flow through reviewed commits.
 
 ## Reliability objectives
+
+Implemented telemetry supports:
+- request volume by method/route/status
+- request latency histograms by method/route
 
 Proposed initial service indicators:
 - API availability

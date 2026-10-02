@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import time
 import uuid
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy import text
 
 from app.api.router import router
+from app.core.metrics import metrics_payload, observe_request
 from app.db.session import SessionLocal
 
 
@@ -38,8 +40,19 @@ def create_app() -> FastAPI:
     @app.middleware("http")
     async def request_context(request: Request, call_next):
         request.state.request_id = _request_id(request)
+        started = time.perf_counter()
         response = await call_next(request)
         response.headers["X-Request-ID"] = request.state.request_id
+
+        route = request.scope.get("route")
+        route_label = getattr(route, "path", "unmatched")
+        if route_label != "/metrics":
+            observe_request(
+                method=request.method,
+                route=route_label,
+                status=response.status_code,
+                duration_seconds=time.perf_counter() - started,
+            )
         return response
 
     @app.exception_handler(HTTPException)
@@ -82,6 +95,13 @@ def create_app() -> FastAPI:
         with SessionLocal() as db:
             db.execute(text("SELECT 1"))
         return {"status": "ready"}
+
+    @app.get("/metrics", include_in_schema=False)
+    def metrics() -> Response:
+        return Response(
+            content=metrics_payload(),
+            headers={"Content-Type": "text/plain; version=0.0.4; charset=utf-8"},
+        )
 
     return app
 
