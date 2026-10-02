@@ -145,5 +145,6 @@ jobs:
         with:
           directory: infrastructure/terraform
           framework: terraform
-          soft_fail: true
+          soft_fail: false
+          skip_check: CKV2_AWS_5
           quiet: false
