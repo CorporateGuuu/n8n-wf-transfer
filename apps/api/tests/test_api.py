@@ -2,7 +2,9 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from sqlalchemy import select
+from sqlalchemy.exc import OperationalError
 
+import app.main as main_module
 from app.core.security import hash_refresh_token
 from app.db.models import AuditEvent, InventoryItem, RefreshSession
 from conftest import login, login_tokens
@@ -12,6 +14,18 @@ def test_health(client):
     response = client.get("/health")
     assert response.json() == {"status": "ok"}
     assert response.headers["X-Request-ID"]
+
+
+def test_readiness_returns_503_when_database_is_unavailable(client, monkeypatch):
+    def unavailable_session():
+        raise OperationalError("SELECT 1", {}, Exception("synthetic database outage"))
+
+    monkeypatch.setattr(main_module, "SessionLocal", unavailable_session)
+    response = client.get("/ready")
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "SERVICE_UNAVAILABLE"
+    assert response.json()["error"]["message"] == "Database dependency unavailable"
+    assert response.json()["error"]["request_id"] == response.headers["X-Request-ID"]
 
 
 def test_metrics_exposes_bounded_http_series(client):
