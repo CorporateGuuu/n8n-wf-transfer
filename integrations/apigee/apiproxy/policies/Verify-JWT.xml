@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<VerifyJWT name="Verify-JWT">
+  <DisplayName>Verify JWT</DisplayName>
+  <Algorithm>RS256</Algorithm>
+  <Source>request.header.Authorization</Source>
+  <PublicKey>
+    <JWKS uri="https://identity.example.invalid/.well-known/jwks.json"/>
+  </PublicKey>
+  <Issuer>https://identity.example.invalid/</Issuer>
+  <Audience>ops-intelligence-api</Audience>
+</VerifyJWT>
