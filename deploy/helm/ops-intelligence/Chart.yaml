@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ops-intelligence
+description: Public-safe Helm chart for the Ops Intelligence API reference deployment.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
