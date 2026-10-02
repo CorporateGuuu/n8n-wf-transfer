@@ -133,3 +133,17 @@ jobs:
           format: spdx-json
           artifact-name: ops-intelligence-sbom.spdx.json
           upload-release-assets: false
+
+  iac-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkov Terraform scan
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: infrastructure/terraform
+          framework: terraform
+          soft_fail: true
+          quiet: false
