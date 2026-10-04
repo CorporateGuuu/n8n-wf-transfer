@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <TargetEndpoint name="default">
   <Description>Placeholder target. Replace through environment-specific deployment configuration.</Description>
+  <DefaultFaultRule name="Default-Fault">
+    <Step><Name>Assign-Fault-Response</Name></Step>
+    <AlwaysEnforce>true</AlwaysEnforce>
+  </DefaultFaultRule>
   <PreFlow name="PreFlow">
     <Request/>
     <Response/>
