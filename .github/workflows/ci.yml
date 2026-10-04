@@ -97,6 +97,8 @@ jobs:
           python-version: '3.12'
       - name: Validate Apigee reference bundle
         run: python scripts/validate_apigee.py
+      - name: Test Apigee validation failure cases
+        run: python scripts/test_apigee_reference.py
 
   platform-gitops:
     runs-on: ubuntu-latest

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage name="Assign-Fault-Response">
+  <Set>
+    <Headers><Header name="X-Request-ID">{messageid}</Header></Headers>
+    <Payload contentType="application/json" variablePrefix="@" variableSuffix="#">{"error":{"code":"gateway_error","message":"Request could not be completed","request_id":"@messageid#"}}</Payload>
+  </Set>
+  <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
+  <AssignTo createNew="false" type="response"/>
+</AssignMessage>
