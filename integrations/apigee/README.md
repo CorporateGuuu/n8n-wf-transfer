@@ -64,3 +64,15 @@ This reference supports discussion of:
 - version promotion and rollback
 - analytics and SLI/SLO ownership
 - CI/CD for API proxy bundles
+
+## Fault response contract
+Both proxy and target endpoints attach an always-enforced default fault rule. The shared AssignMessage policy sets a generic JSON error and the gateway-generated request ID; it deliberately leaves the HTTP status unchanged so authentication and throttling errors retain their status. It does not expose internal fault names or backend messages. This is a static reference: live 401, 429, target timeout, and routing-failure tests remain required before deployment.
+
+Policy references are checked in both endpoints. Placeholder validation parses the hostname and rejects real hosts containing the placeholder text in a path or as a hostname prefix.
+
+## Environment and consumer configuration
+For each authorized dev/test/production deployment, record the target base URL, JWT issuer, JWKS URL, expected audience, quota entitlement and spike-arrest allowance in the deployment system. Replace these public placeholders through a reviewed deployment process; this repository does not implement that substitution. Secrets remain in the authorized secret store. Preserve the exported application OpenAPI contract and record its commit alongside the imported proxy revision.
+
+Consumer onboarding requires an approved API product, named consumer owner, allowed scopes/audience, quota, credential issuance outside this repository, and a tested revocation path. Assign the API owner responsibility for contract changes and the platform owner responsibility for deployment, gateway availability and rollback. Review error rates, latency, quota violations and auth failures with those owners before promotion.
+
+References: [Apigee fault handling](https://docs.cloud.google.com/apigee/docs/api-platform/fundamentals/fault-handling), [AssignMessage policy](https://docs.cloud.google.com/apigee/docs/api-platform/reference/policies/assign-message-policy).
