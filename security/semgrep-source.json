@@ -1,0 +1,11 @@
+{
+  "source": "https://semgrep.dev/c/p/javascript",
+  "retrieved": "2026-10-05",
+  "sha256": "e65e8449157ef5d587f2c2a0c17ed388910ca90336e514d27941ccd25543cf4e",
+  "scanner": "semgrep==1.179.0",
+  "scope": [
+    "apps/web/app",
+    "apps/web/lib"
+  ],
+  "upstreamLicense": "Internal-use registry rules; definitions are not redistributed. https://semgrep.dev/legal/rules-license/"
+}

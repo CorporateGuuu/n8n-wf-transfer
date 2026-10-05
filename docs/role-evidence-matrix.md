@@ -39,8 +39,8 @@ Implementation `a60f49e6dc9839e082958289c861d17917abd610`, [CI 36956614960](http
 - Redis behavior
 - external deployment
 - production observability
-- Frontend static security scanning and signed deployment provenance. API Bandit/startup-secret guard passed at b522494 / CI37328054597; bounded synthetic local PostgreSQL restore and11in-process restored-auth/tenant checks passed, hosted restore extension pending.
+- Signed deployment provenance and latest-head hosted frontend scan acceptance. API Bandit/startup-secret guard passed at b522494 / CI37328054597; actual09c5bf2 restore artifact verifies12tables/14rows and15in-process restored-auth/tenant checks. Frontend Semgrep74-rule/13-file local scan and negative probe passed; no production recovery/IdP claim.
 - Full inventory completeness, signed provenance and deployed-artifact verification
-- full Playwright execution
+- Latest-head hosted browser/static-security acceptance: local3Playwright tests and74-rule frontend scan pass; hosted browser job passed at832f1bc, current combined-head CI remains separate.
 
 Do not convert these planned items into resume claims until corresponding evidence exists.
