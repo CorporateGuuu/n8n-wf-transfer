@@ -8,13 +8,15 @@ from pathlib import Path
 
 
 REQUIRED = {"fastapi", "pydantic", "sqlalchemy", "psycopg", "uvicorn"}
+FRONTEND_REQUIRED = {"next", "react", "react-dom"}
 
 
 def normalize(name):
     return re.sub(r"[-_.]+", "-", name.lower())
 
 
-def inspect(path):
+def inspect(path, scope="api"):
+    required = REQUIRED if scope == "api" else FRONTEND_REQUIRED
     raw = path.read_bytes()
     document = json.loads(raw)
     if document.get("spdxVersion") != "SPDX-2.3":
@@ -27,27 +29,29 @@ def inspect(path):
         name = package.get("name")
         if not isinstance(name, str):
             raise ValueError("Invalid package name")
-        if normalize(name) in REQUIRED:
+        if normalize(name) in required:
             version = package.get("versionInfo")
             if not isinstance(version, str) or not version.strip():
                 raise ValueError("Required runtime package has no resolved version")
             found[normalize(name)] = version
-    missing = sorted(REQUIRED - found.keys())
+    missing = sorted(required - found.keys())
     if missing:
-        raise ValueError("Missing API runtime dependencies: " + ", ".join(missing))
+        raise ValueError("Missing " + scope + " dependencies: " + ", ".join(missing))
     return {
         "sha256": hashlib.sha256(raw).hexdigest(),
         "package_count": len(packages),
         "required_runtime_versions": found,
-        "scope": "built API image; frontend and completeness not asserted",
+        "scope": "built API image" if scope == "api" else "installed frontend tree including build/dev dependencies",
+        "completeness_asserted": False,
     }
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("inventory", type=Path)
+    parser.add_argument("--scope", choices=("api", "frontend"), default="api")
     args = parser.parse_args()
     try:
-        print(json.dumps(inspect(args.inventory), sort_keys=True))
+        print(json.dumps(inspect(args.inventory, args.scope), sort_keys=True))
     except (ValueError, TypeError, AttributeError, OSError) as error:
         parser.exit(1, f"Runtime inventory rejected: {error}\n")

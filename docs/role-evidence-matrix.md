@@ -30,7 +30,7 @@ This matrix helps reviewers map repository evidence to common role families. It 
 
 ## Evidence reconciliation — October 5, 2026
 
-Implementation `a60f49e6dc9839e082958289c861d17917abd610`, [CI 36956614960](https://github.com/CorporateGuuu/n8n-wf-transfer/actions/runs/36956614960), is the evidence baseline. These statements describe the open PR branch, not main-branch integration. Terraform network configuration and vulnerability scans are implemented and CI tested. Downloaded baseline SBOM contains nine source-tooling packages, no Python/Node application runtime coverage; wrapper status remains inconsistent. A built API-image inventory and dependency/version coverage gate are newly implemented, with CI/artifact inspection pending. [Security evidence map](security-evidence-map.md) gives exact boundaries.
+Implementation `a60f49e6dc9839e082958289c861d17917abd610`, [CI 36956614960](https://github.com/CorporateGuuu/n8n-wf-transfer/actions/runs/36956614960), is the evidence baseline. These statements describe the open PR branch, not main-branch integration. Terraform network configuration and vulnerability scans are implemented and CI tested. Downloaded baseline SBOM contains nine source-tooling packages, no Python/Node application runtime coverage; wrapper status remains inconsistent. Built API-image and installed-frontend inventories with dependency/version gates are newly implemented, with CI/artifact inspection pending. The frontend inventory includes build/dev dependencies. [Security evidence map](security-evidence-map.md) gives exact boundaries.
 
 ## Planned or not yet independently verified
 
