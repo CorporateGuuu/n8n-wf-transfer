@@ -89,7 +89,9 @@ The backend tests cover organization-aware authentication, refresh rotation and 
 
 CI also runs a PostgreSQL-specific contract test against PostgreSQL 16 and performs a production Next.js build.
 
-Playwright journey scaffolding exists for login → products → inventory mutation → audit visibility; execution should not be described as verified until an observed Playwright run is recorded.
+The three-test Playwright suite covers login → products → inventory mutation → audit → logout, anonymous inventory access, and analyst read-only access with a denied direct write. A local production-build run against disposable synthetic SQLite passed all three without skips; an independent database check confirmed Northstar quantity 19, Harbor quantity 999 and one audit event. This is local browser integration evidence, not production or PostgreSQL browser-runtime acceptance. The dedicated hosted CI job must pass at the current commit before hosted acceptance is claimed.
+
+After installing API dependencies, running `npm ci` and building `apps/web`, run `python scripts/verify_browser_journey.py`. Install Playwright Chromium first, or select an existing Chrome installation with `PLAYWRIGHT_BROWSER_CHANNEL=chrome`. The runner owns loopback servers and a disposable fixture, verifies tenant quantities/audit count, and stops the server process groups. Synthetic reports are written to ignored `.e2e-results/`; no real customer data is used.
 
 ## Engineering decisions
 
