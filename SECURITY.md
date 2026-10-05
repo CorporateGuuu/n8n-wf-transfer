@@ -4,7 +4,7 @@ This repository is a synthetic engineering portfolio project. Do not add real cu
 
 ## Authentication
 
-- Passwords are hashed with Argon2.
+- Passwords are hashed with Argon2. Malformed stored hashes and documented verification errors fail closed with the generic401 login response and issue no refresh session. This follows the [Argon2 verifier exception contract](https://argon2-cffi.readthedocs.io/en/stable/api.html); data-integrity incidents still require operational investigation.
 - Login is organization-aware; tenant identity is not accepted from arbitrary resource-write payloads.
 - Access tokens are short-lived signed credentials.
 - Staging/production and other non-development environments refuse the public development signing value or a signing secret shorter than 32 UTF-8 bytes at startup. Development/test modes deliberately retain synthetic fixtures. Length validation does not establish entropy; operators must provide a cryptographically generated, securely managed secret and set `APP_ENV` correctly.
