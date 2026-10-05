@@ -20,7 +20,11 @@ This repository is a **public, synthetic reference project**. It is suitable for
 ### Secure software delivery
 Current verified evidence includes automated application tests, PostgreSQL-backed contract testing, migration execution, OpenAPI drift detection, and production web builds.
 
-Additional DevSecOps controls such as SAST, container scanning, SBOM generation, Terraform validation, and deployment attestation should be treated as future work until implemented and observed.
+At implementation `a60f49e6dc9839e082958289c861d17917abd610`, [CI run 36956614960](https://github.com/CorporateGuuu/n8n-wf-transfer/actions/runs/36956614960) completed successfully. Terraform format/init/validate, Checkov, Helm lint/render, GitOps reference checks, repository public-safety checks, API container build, and blocking filesystem/container vulnerability scans have CI evidence. Terraform is a network reference slice, not a complete AWS application deployment. Checkov skips `CKV2_AWS_5`; vulnerability gates exclude unfixed findings. Passing those gates does not mean all risks are resolved.
+
+SBOM generation is configured and the job's completed steps report success, but the wrapper retains an `in_progress` status alongside a success conclusion. A downloaded inventory/artifact review is still needed before claiming independently verified SBOM contents. SAST, signed deployment provenance, actual cloud provisioning and live Kubernetes/Argo/observability remain unproven.
+
+See [the evidence-to-practices map](security-evidence-map.md) for source paths, tested boundaries and the evidence still required.
 
 ## Public standards discussion
 
