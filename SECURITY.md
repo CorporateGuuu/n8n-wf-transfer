@@ -18,7 +18,7 @@ Authorization is enforced by the API, not by hidden UI controls. Tenant-scoped q
 
 ## Request and error handling
 
-Every request receives a normalized UUID request ID. API errors use a stable envelope and include the request ID without exposing secrets or stack traces.
+Every request receives a normalized UUID request ID. API errors use a stable envelope and include the request ID without exposing secrets or stack traces. Validation details retain field location, error type and message but omit raw rejected inputs and exception context. Product/inventory partial updates reject explicit nulls before database writes or audit events; omitted fields remain unchanged and OpenAPI describes the same contract.
 
 ## Secret handling
 
