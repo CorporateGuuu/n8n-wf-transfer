@@ -7,8 +7,8 @@ This matrix helps reviewers map repository evidence to common role families. It 
 | Senior Software Engineer | modular monolith, API contracts, migrations, auth, RBAC, audit events, Next.js/FastAPI boundary | Implemented + partially verified in CI | architecture trade-offs, contract stability, test strategy |
 | Backend Engineer | FastAPI, Pydantic, SQLAlchemy, Alembic, PostgreSQL contract tests, tenant-scoped queries | Implemented + verified areas | transactions, validation, tenancy, error contracts |
 | Platform Engineer | CI gates, migrations, health/readiness, API contract drift, container assets | Implemented + verified areas | delivery gates, operability, release safety |
-| Cloud Engineer | AWS target architecture documented | Designed only | service selection, networking, secrets, managed database design |
-| DevOps / DevSecOps | GitHub Actions, reproducible tests/builds, migration verification, security-oriented auth design | Implemented + verified areas | CI quality gates, secure delivery, evidence-based claims |
+| Cloud Engineer | AWS network slice: VPC, public/private subnets, routing and security-group boundaries; Terraform format/init/validate | Implemented + CI validated; no AWS provisioning | service selection, networking, secrets, managed database design |
+| DevOps / DevSecOps | GitHub Actions, reproducible tests/builds, migration verification, Checkov, blocking filesystem/API-image vulnerability gates, Helm/GitOps reference checks | Implemented + CI-tested scopes; scan exclusions and runtime gaps remain | CI quality gates, secure delivery, evidence-based claims |
 | Security-minded SWE | RBAC, tenant isolation, rotating sessions, audit events, request IDs | Implemented + verified areas | authn/authz, session security, multi-tenant threat boundaries |
 | Full-Stack Engineer | Next.js + TypeScript frontend consuming FastAPI APIs | Implemented + production build verified | typed API boundaries, frontend/backend responsibilities |
 | Data / Analytics Engineer | tenant-scoped KPI aggregation and relational model | Implemented + backend tests | aggregation correctness, tenant-safe analytics |
@@ -28,15 +28,19 @@ This matrix helps reviewers map repository evidence to common role families. It 
 - Docker assets
 - OpenAPI
 
-## Planned but not yet verified
+## Evidence reconciliation — October 5, 2026
 
-- Terraform implementation
+Implementation `a60f49e6dc9839e082958289c861d17917abd610`, [CI 36956614960](https://github.com/CorporateGuuu/n8n-wf-transfer/actions/runs/36956614960), is the evidence baseline. These statements describe the open PR branch, not main-branch integration. Terraform network configuration and vulnerability scans are implemented and CI tested. Downloaded baseline SBOM contains nine source-tooling packages, no Python/Node application runtime coverage; wrapper status remains inconsistent. Built API-image and installed-frontend inventories with dependency/version gates passed at `e612620` / [CI37325054419](https://github.com/CorporateGuuu/n8n-wf-transfer/actions/runs/37325054419). Actual downloaded artifacts contain 124 API-image packages and 58 frontend packages; both required-package/version validators pass. Frontend includes build/dev dependencies; complete inventory coverage is not asserted. [Security evidence map](security-evidence-map.md) gives exact boundaries.
+
+## Planned or not yet independently verified
+
+- Complete application infrastructure beyond the network reference slice
 - AWS provisioning
 - Redis behavior
 - external deployment
 - production observability
-- container vulnerability scanning
-- SBOM generation
-- full Playwright execution
+- Signed deployment provenance and latest-head hosted frontend scan acceptance. API Bandit/startup-secret guard passed at b522494 / CI37328054597; actual09c5bf2 restore artifact verifies12tables/14rows and15in-process restored-auth/tenant checks. Frontend Semgrep74-rule/13-file local scan and negative probe passed; no production recovery/IdP claim.
+- Full inventory completeness, signed provenance and deployed-artifact verification
+- Latest-head hosted browser/static-security acceptance: local3Playwright tests and74-rule frontend scan pass; hosted browser job passed at832f1bc, current combined-head CI remains separate.
 
 Do not convert these planned items into resume claims until corresponding evidence exists.

@@ -18,6 +18,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -e '.[test]'
+      - name: Install pinned Python static security scanner
+        run: pip install bandit==1.9.4
+      - name: Static security scan of API runtime code
+        run: bandit -r apps/api/app --severity-level medium --confidence-level all --ignore-nosec
       - run: pytest -m 'not postgres'
       - run: python scripts/export_openapi.py --check
       - run: DATABASE_URL=sqlite+pysqlite:///./ci.db alembic upgrade head
@@ -51,6 +55,15 @@ jobs:
       - run: pip install -e '.[test]'
       - run: alembic upgrade head
       - run: pytest -m postgres
+      - name: Rehearse synthetic PostgreSQL backup and restore
+        env:
+          PYTHONPATH: apps/api
+          APP_ENV: test
+        run: python scripts/verify_postgres_restore.py > postgres-restore-report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: postgres-restore-rehearsal
+          path: postgres-restore-report.json
 
   web-build:
     runs-on: ubuntu-latest
@@ -64,8 +77,71 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
       - run: npm run build
+      - name: Inventory installed frontend dependencies
+        uses: anchore/sbom-action@v0
+        with:
+          path: apps/web
+          format: spdx-json
+          output-file: web-installed.spdx.json
+          artifact-name: ops-intelligence-web-installed.spdx.json
+          upload-release-assets: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify frontend inventory coverage
+        working-directory: .
+        run: python scripts/validate_runtime_sbom.py web-installed.spdx.json --scope frontend
+
+  frontend-sast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install semgrep==1.179.0
+      - name: Static frontend security scan and negative gate probe
+        run: python scripts/verify_frontend_sast.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-static-security
+          path: .e2e-results/frontend-sast*.json
+          include-hidden-files: true
+          if-no-files-found: error
+
+  web-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: pip install -e '.[test]'
+      - run: npm ci --no-audit --no-fund
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: npm run build
+        working-directory: apps/web
+      - name: Browser authorization and audited inventory journey
+        run: python scripts/verify_browser_journey.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-journey-synthetic
+          path: .e2e-results/
+          include-hidden-files: true
+          if-no-files-found: error
 
   terraform:
     runs-on: ubuntu-latest
@@ -160,3 +236,42 @@ jobs:
           python-version: '3.12'
       - name: Validate FinOps controls
         run: python scripts/validate_finops.py
+
+  vulnerability-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Trivy filesystem discovery scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          format: table
+          exit-code: '1'
+      - name: Build API image
+        run: docker build -f docker/api.Dockerfile -t ops-intelligence-api:scan .
+      - name: Inventory the built API runtime
+        uses: anchore/sbom-action@v0
+        with:
+          image: ops-intelligence-api:scan
+          format: spdx-json
+          output-file: api-runtime.spdx.json
+          artifact-name: ops-intelligence-api-runtime.spdx.json
+          upload-release-assets: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify API runtime inventory coverage
+        run: python scripts/validate_runtime_sbom.py api-runtime.spdx.json
+      - name: Trivy container discovery scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ops-intelligence-api:scan
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          format: table
+          exit-code: '1'

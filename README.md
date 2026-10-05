@@ -14,6 +14,7 @@ Ops Intelligence is a **synthetic multi-tenant operations platform** built to de
 - Terraform 1.9.8 format, init, and validate for the AWS network reference slice
 - Apigee reference proxy bundle static validation
 - FinOps allocation/ownership tag contract validation
+- blocking Trivy filesystem and API-container scans for fixable HIGH/CRITICAL vulnerabilities
 - Helm lint/render, GitOps reference validation, repository public-safety scan, API container build, and SPDX SBOM generation
 
 **Implemented:**
@@ -31,7 +32,7 @@ Ops Intelligence is a **synthetic multi-tenant operations platform** built to de
 - versioned OpenAPI artifact
 - Next.js login/dashboard flow through HttpOnly cookies
 - API-backed products, inventory, and recent activity
-- Playwright journey scaffolding
+- Three-test Playwright browser authorization and audited inventory journey
 - Terraform AWS network reference slice: VPC, two public subnets, two private subnets, internet gateway/public routing, and ALB/application/database security-group boundaries
 
 **Not yet claimed as verified:** Docker Compose runtime, Redis behavior, Terraform/AWS provisioning, external deployment, and production observability.
@@ -88,7 +89,11 @@ The backend tests cover organization-aware authentication, refresh rotation and 
 
 CI also runs a PostgreSQL-specific contract test against PostgreSQL 16 and performs a production Next.js build.
 
-Playwright journey scaffolding exists for login → products → inventory mutation → audit visibility; execution should not be described as verified until an observed Playwright run is recorded.
+The three-test Playwright suite covers login → products → inventory mutation → audit → logout, anonymous inventory access, and analyst read-only access with a denied direct write. A local production-build run against disposable synthetic SQLite passed all three without skips; an independent database check confirmed Northstar quantity 19, Harbor quantity 999 and one audit event. This is local browser integration evidence, not production or PostgreSQL browser-runtime acceptance. The dedicated hosted CI job must pass at the current commit before hosted acceptance is claimed.
+
+After installing API dependencies, running `npm ci` and building `apps/web`, run `python scripts/verify_browser_journey.py`. Install Playwright Chromium first, or select an existing Chrome installation with `PLAYWRIGHT_BROWSER_CHANNEL=chrome`. The runner owns loopback servers and a disposable fixture, verifies tenant quantities/audit count, and stops the server process groups. Synthetic reports are written to ignored `.e2e-results/`; no real customer data is used.
+
+Frontend static security analysis uses pinned Semgrep CE 1.179.0 and a digest-pinned registry rule snapshot. `python scripts/verify_frontend_sast.py` downloads rules for internal use without redistributing them, disables metrics/version-check telemetry, ignores suppression comments, requires coverage of every runtime JS/TS file under `apps/web/app` and `apps/web/lib`, and checks a never-executed unsafe-input probe is blocked. Locally, 74 rules scanned all 13 files with zero findings/parse errors; the probe produced a blocking finding. The new hosted gate is pending. This is bounded file-local static analysis, not complete security acceptance. See `security/semgrep-source.json` for the source, digest and upstream licensing reference.
 
 ## Engineering decisions
 
@@ -150,6 +155,10 @@ For the web application, use the package scripts in `apps/web`.
 - Why the system begins as a modular monolith
 - How API contract drift is prevented
 - How engineering claims are tied to observed evidence
+
+## Vulnerability management
+
+CI blocks fixable HIGH/CRITICAL findings in both the repository filesystem and the built API image. The initial image scan surfaced one HIGH Debian package CVE, which was remediated through the container build before the gate became blocking. See `docs/vulnerability-management.md`.
 
 ## FinOps / cost ownership
 

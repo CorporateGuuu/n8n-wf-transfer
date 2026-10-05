@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Generic, Literal, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ORMModel(BaseModel):
@@ -53,15 +53,41 @@ class ProductCreate(BaseModel):
     sku: str = Field(min_length=1, max_length=80)
     name: str = Field(min_length=1, max_length=160)
     category: str = Field(min_length=1, max_length=80)
-    unit_cost: Decimal = Field(ge=0)
-    sale_price: Decimal = Field(ge=0)
+    unit_cost: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
+    sale_price: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
 
 
-class ProductPatch(BaseModel):
+def _non_null_patch_schema(schema: dict) -> None:
+    # Fields may be omitted, but database-backed patch fields cannot be cleared.
+    for prop in schema.get("properties", {}).values():
+        choices = prop.get("anyOf")
+        if choices:
+            remaining = [choice for choice in choices if choice.get("type") != "null"]
+            if len(remaining) == 1:
+                prop.pop("anyOf")
+                prop.update(remaining[0])
+            else:
+                prop["anyOf"] = remaining
+        if prop.get("default") is None:
+            prop.pop("default", None)
+
+
+class NonNullPatch(BaseModel):
+    model_config = ConfigDict(json_schema_extra=_non_null_patch_schema)
+
+    @field_validator("*", mode="before", check_fields=False)
+    @classmethod
+    def reject_explicit_null(cls, value):
+        if value is None:
+            raise ValueError("Patch fields cannot be null; omit unchanged fields")
+        return value
+
+
+class ProductPatch(NonNullPatch):
     name: str | None = Field(default=None, min_length=1, max_length=160)
     category: str | None = Field(default=None, min_length=1, max_length=80)
-    unit_cost: Decimal | None = Field(default=None, ge=0)
-    sale_price: Decimal | None = Field(default=None, ge=0)
+    unit_cost: Decimal | None = Field(default=None, ge=0, max_digits=14, decimal_places=2)
+    sale_price: Decimal | None = Field(default=None, ge=0, max_digits=14, decimal_places=2)
     active: bool | None = None
 
 
@@ -81,13 +107,13 @@ class InventoryCreate(BaseModel):
     product_id: str
     location: str = Field(min_length=1, max_length=120)
     condition: str = Field(min_length=1, max_length=40)
-    quantity: int = Field(ge=0)
-    reorder_point: int = Field(ge=0)
+    quantity: int = Field(ge=0, le=2147483647)
+    reorder_point: int = Field(ge=0, le=2147483647)
 
 
-class InventoryPatch(BaseModel):
-    quantity: int | None = Field(default=None, ge=0)
-    reorder_point: int | None = Field(default=None, ge=0)
+class InventoryPatch(NonNullPatch):
+    quantity: int | None = Field(default=None, ge=0, le=2147483647)
+    reorder_point: int | None = Field(default=None, ge=0, le=2147483647)
     location: str | None = Field(default=None, min_length=1, max_length=120)
 
 
