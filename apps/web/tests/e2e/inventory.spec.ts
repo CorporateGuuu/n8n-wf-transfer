@@ -12,11 +12,11 @@ test("login, inspect products, and audit an inventory mutation", async ({ page }
 
   await page.getByRole("link", { name: "Products" }).click();
   await expect(page.getByRole("heading", { name: "Products" })).toBeVisible();
-  await expect(page.getByText("SKU-A")).toBeVisible();
+  await expect(page.getByText("DSP-16P-001")).toBeVisible();
 
   await page.getByRole("link", { name: "Dashboard" }).click();
   await page.getByRole("link", { name: "Inventory" }).first().click();
-  const quantity = page.getByLabel(/Quantity for SKU-A/);
+  const quantity = page.getByLabel(/Quantity for DSP-16P-001/);
   const current = Number(await quantity.inputValue());
   await quantity.fill(String(current + 1));
   await page.getByRole("button", { name: "Save" }).click();
