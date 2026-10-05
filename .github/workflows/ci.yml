@@ -111,6 +111,8 @@ jobs:
         with:
           name: frontend-static-security
           path: .e2e-results/frontend-sast*.json
+          include-hidden-files: true
+          if-no-files-found: error
 
   web-e2e:
     runs-on: ubuntu-latest
@@ -138,6 +140,8 @@ jobs:
         with:
           name: browser-journey-synthetic
           path: .e2e-results/
+          include-hidden-files: true
+          if-no-files-found: error
 
   terraform:
     runs-on: ubuntu-latest
