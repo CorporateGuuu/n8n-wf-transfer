@@ -178,6 +178,19 @@ jobs:
           exit-code: '1'
       - name: Build API image
         run: docker build -f docker/api.Dockerfile -t ops-intelligence-api:scan .
+      - name: Inventory the built API runtime
+        uses: anchore/sbom-action@v0
+        with:
+          image: ops-intelligence-api:scan
+          format: spdx-json
+          output-file: api-runtime.spdx.json
+          artifact-name: ops-intelligence-api-runtime.spdx.json
+          upload-release-assets: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify API runtime inventory coverage
+        run: python scripts/validate_runtime_sbom.py api-runtime.spdx.json
       - name: Trivy container discovery scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
