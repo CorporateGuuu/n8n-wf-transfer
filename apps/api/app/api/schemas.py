@@ -53,8 +53,8 @@ class ProductCreate(BaseModel):
     sku: str = Field(min_length=1, max_length=80)
     name: str = Field(min_length=1, max_length=160)
     category: str = Field(min_length=1, max_length=80)
-    unit_cost: Decimal = Field(ge=0)
-    sale_price: Decimal = Field(ge=0)
+    unit_cost: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
+    sale_price: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
 
 
 def _non_null_patch_schema(schema: dict) -> None:
@@ -86,8 +86,8 @@ class NonNullPatch(BaseModel):
 class ProductPatch(NonNullPatch):
     name: str | None = Field(default=None, min_length=1, max_length=160)
     category: str | None = Field(default=None, min_length=1, max_length=80)
-    unit_cost: Decimal | None = Field(default=None, ge=0)
-    sale_price: Decimal | None = Field(default=None, ge=0)
+    unit_cost: Decimal | None = Field(default=None, ge=0, max_digits=14, decimal_places=2)
+    sale_price: Decimal | None = Field(default=None, ge=0, max_digits=14, decimal_places=2)
     active: bool | None = None
 
 
@@ -107,13 +107,13 @@ class InventoryCreate(BaseModel):
     product_id: str
     location: str = Field(min_length=1, max_length=120)
     condition: str = Field(min_length=1, max_length=40)
-    quantity: int = Field(ge=0)
-    reorder_point: int = Field(ge=0)
+    quantity: int = Field(ge=0, le=2147483647)
+    reorder_point: int = Field(ge=0, le=2147483647)
 
 
 class InventoryPatch(NonNullPatch):
-    quantity: int | None = Field(default=None, ge=0)
-    reorder_point: int | None = Field(default=None, ge=0)
+    quantity: int | None = Field(default=None, ge=0, le=2147483647)
+    reorder_point: int | None = Field(default=None, ge=0, le=2147483647)
     location: str | None = Field(default=None, min_length=1, max_length=120)
 
 
