@@ -39,7 +39,7 @@ Implementation `a60f49e6dc9839e082958289c861d17917abd610`, [CI 36956614960](http
 - Redis behavior
 - external deployment
 - production observability
-- SAST and signed deployment provenance
+- Hosted verification of the newly implemented API Bandit/startup-secret guard; frontend static security scanning and signed deployment provenance
 - Full inventory completeness, signed provenance and deployed-artifact verification
 - full Playwright execution
 

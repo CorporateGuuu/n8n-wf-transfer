@@ -18,6 +18,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -e '.[test]'
+      - name: Install pinned Python static security scanner
+        run: pip install bandit==1.9.4
+      - name: Static security scan of API runtime code
+        run: bandit -r apps/api/app --severity-level medium --confidence-level all --ignore-nosec
       - run: pytest -m 'not postgres'
       - run: python scripts/export_openapi.py --check
       - run: DATABASE_URL=sqlite+pysqlite:///./ci.db alembic upgrade head
