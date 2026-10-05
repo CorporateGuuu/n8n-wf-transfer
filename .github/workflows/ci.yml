@@ -58,6 +58,7 @@ jobs:
       - name: Rehearse synthetic PostgreSQL backup and restore
         env:
           PYTHONPATH: apps/api
+          APP_ENV: test
         run: python scripts/verify_postgres_restore.py > postgres-restore-report.json
       - uses: actions/upload-artifact@v4
         with:

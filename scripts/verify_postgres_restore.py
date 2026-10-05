@@ -57,11 +57,15 @@ def main():
         target = create_engine(url.set(database=names[1]))
         engines.extend([source, target])
         from sqlalchemy.orm import Session
-        from app.db.models import Organization, Product, InventoryItem, AuditEvent
+        from app.db.models import Organization, Product, InventoryItem, AuditEvent, Role, User
+        from app.core.security import hash_password
         with Session(source) as session:
+            role = Role(name="admin")
+            session.add(role); session.flush()
             for suffix, qty in [("a", 3), ("b", 777)]:
                 org = Organization(name=f"Synthetic Restore {suffix}", slug=f"restore-{suffix}")
                 session.add(org); session.flush()
+                session.add(User(organization_id=org.id, email=f"admin-{suffix}@restore.example", password_hash=hash_password("SyntheticRestoreOnly123!"), roles=[role]))
                 product = Product(organization_id=org.id, sku="SAME-SKU", name=f"Fixture {suffix}", category="test", unit_cost=10, sale_price=20)
                 session.add(product); session.flush()
                 session.add(InventoryItem(organization_id=org.id, product_id=product.id, location=suffix, condition="new", quantity=qty))
@@ -90,6 +94,51 @@ def main():
                 constraint = True
             else:
                 raise AssertionError("restored nonnegative quantity constraint missing")
+            from fastapi.testclient import TestClient
+            from sqlalchemy.orm import sessionmaker
+            from app.api.deps import get_db
+            import app.main as main_module
+            restored_session = sessionmaker(bind=target)
+            def get_restored_db():
+                with restored_session() as session:
+                    yield session
+            original_session = main_module.SessionLocal
+            main_module.SessionLocal = restored_session
+            app = main_module.create_app()
+            app.dependency_overrides[get_db] = get_restored_db
+            checks = []
+            try:
+                with TestClient(app) as client:
+                    assert client.get("/health").status_code == 200
+                    checks.append("liveness")
+                    assert client.get("/ready").status_code == 200
+                    checks.append("restored_database_readiness")
+                    assert client.get("/api/v1/inventory").status_code == 401
+                    checks.append("unauthenticated_inventory_rejected")
+                    identities = {}
+                    for suffix, qty in [("a", 3), ("b", 777)]:
+                        response = client.post("/api/v1/auth/login", json={"organization_slug":f"restore-{suffix}", "email":f"admin-{suffix}@restore.example", "password":"SyntheticRestoreOnly123!"})
+                        assert response.status_code == 200
+                        headers = {"Authorization":"Bearer " + response.json()["access_token"]}
+                        checks.append(f"restored_identity_{suffix}_login")
+                        response = client.get("/api/v1/inventory", headers=headers)
+                        assert response.status_code == 200
+                        body = response.json()
+                        assert body["total"] == 1 and len(body["items"]) == 1 and body["items"][0]["quantity"] == qty
+                        identities[suffix] = (headers, body["items"][0]["id"])
+                        checks.append(f"tenant_{suffix}_inventory_isolation")
+                        response = client.get("/api/v1/products", headers=headers)
+                        assert response.status_code == 200 and response.json()["total"] == 1 and response.json()["items"][0]["name"] == f"Fixture {suffix}"
+                        checks.append(f"tenant_{suffix}_same_sku_product_isolation")
+                    assert client.get("/api/v1/inventory/" + identities["b"][1], headers=identities["a"][0]).status_code == 404
+                    checks.append("cross_tenant_object_hidden")
+                    response = client.post("/api/v1/auth/login", json={"organization_slug":"restore-b", "email":"admin-a@restore.example", "password":"SyntheticRestoreOnly123!"})
+                    assert response.status_code == 401
+                    checks.append("wrong_organization_login_rejected")
+            finally:
+                main_module.SessionLocal = original_session
+            report["restored_api_checks"] = checks
+            report["api_test_boundary"] = "in-process FastAPI TestClient with real restored PostgreSQL; not live network/IdP"
             report.update(tables=len(before), rows=sum(map(len, before.values())),
                           snapshot_match=True, source_mutation_excluded=True,
                           restored_nonnegative_constraint_enforced=constraint,
